@@ -1,0 +1,158 @@
+{% extends 'shortener/base.html' %}
+
+{% block title %}Dashboard - URL Shortener{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2><i class="fas fa-tachometer-alt"></i> My Dashboard</h2>
+        
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <h5>Total URLs</h5>
+                        <h3>{{ total_urls }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h5>Total Clicks</h5>
+                        <h3>{{ total_clicks }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <h5>Active URLs</h5>
+                        <h3>{{ page_obj.paginator.count }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5>Your Shortened URLs</h5>
+            </div>
+            <div class="card-body">
+                {% if page_obj %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Short Code</th>
+                                    <th>Original URL</th>
+                                    <th>Created</th>
+                                    <th>Clicks</th>
+                                    <th>Expires</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for url in page_obj %}
+                                <tr>
+                                    <td>
+                                        <code>{{ url.short_code }}</code>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url.original_url }}" target="_blank" class="text-truncate" style="max-width: 200px; display: inline-block;">
+                                            {{ url.original_url|truncatechars:50 }}
+                                        </a>
+                                    </td>
+                                    <td>{{ url.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ url.click_count }}</span>
+                                    </td>
+                                    <td>
+                                        {% if url.expires_at %}
+                                            {{ url.expires_at|date:"M d, Y" }}
+                                        {% else %}
+                                            <span class="text-muted">Never</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'analytics' url.short_code %}" class="btn btn-outline-info" title="Analytics">
+                                                <i class="fas fa-chart-bar"></i>
+                                            </a>
+                                            <a href="{% url 'download_qr' url.short_code %}" class="btn btn-outline-success" title="Download QR">
+                                                <i class="fas fa-qrcode"></i>
+                                            </a>
+                                            <button class="btn btn-outline-primary" onclick="copyUrl('{{ request.get_host }}/{{ url.short_code }}')" title="Copy URL">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                            <form method="post" action="{% url 'delete_url' url.short_code %}" style="display: inline;">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-danger" title="Delete" onclick="return confirm('Are you sure?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if page_obj.has_other_pages %}
+                    <nav>
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item"><a class="page-link" href="?page=1">&laquo; First</a></li>
+                                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                            {% endif %}
+                            
+                            <li class="page-item active">
+                                <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                            </li>
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                                <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-link fa-3x text-muted mb-3"></i>
+                        <h5>No URLs shortened yet</h5>
+                        <p class="text-muted">Start by shortening your first URL!</p>
+                        <a href="{% url 'home' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Shorten URL
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyUrl(url) {
+    const fullUrl = 'http://' + url;
+    navigator.clipboard.writeText(fullUrl).then(function() {
+        // Show feedback
+        const button = event.target.closest('button');
+        const originalHTML = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i>';
+        button.classList.remove('btn-outline-primary');
+        button.classList.add('btn-success');
+        
+        setTimeout(() => {
+            button.innerHTML = originalHTML;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-primary');
+        }, 2000);
+    });
+}
+</script>
+{% endblock %}

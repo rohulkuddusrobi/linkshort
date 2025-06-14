@@ -1,0 +1,77 @@
+{% extends 'shortener/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-body text-center">
+                <h2 class="card-title text-success">
+                    <i class="fas fa-check-circle"></i> URL Shortened Successfully!
+                </h2>
+                
+                <div class="mt-4">
+                    <h5>Your shortened URL:</h5>
+                    <div class="input-group mt-2">
+                        <input type="text" class="form-control form-control-lg" 
+                               id="shortUrl" value="{{ full_short_url }}" readonly>
+                        <button class="btn btn-outline-primary" type="button" onclick="copyToClipboard()">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h6>QR Code:</h6>
+                        <img src="{{ qr_code }}" alt="QR Code" class="img-fluid border" style="max-width: 200px;">
+                        <br>
+                        <a href="{% url 'download_qr' short_url.short_code %}" class="btn btn-sm btn-outline-primary mt-2">
+                            <i class="fas fa-download"></i> Download QR
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Link Details:</h6>
+                        <ul class="list-unstyled text-start">
+                            <li><strong>Short Code:</strong> {{ short_url.short_code }}</li>
+                            <li><strong>Created:</strong> {{ short_url.created_at|date:"M d, Y H:i" }}</li>
+                            <li><strong>Clicks:</strong> {{ short_url.click_count }}</li>
+                            {% if short_url.expires_at %}
+                            <li><strong>Expires:</strong> {{ short_url.expires_at|date:"M d, Y H:i" }}</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <a href="{% url 'home' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Shorten Another URL
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyToClipboard() {
+    const shortUrl = document.getElementById('shortUrl');
+    shortUrl.select();
+    document.execCommand('copy');
+    
+    // Show feedback
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    button.classList.remove('btn-outline-primary');
+    button.classList.add('btn-success');
+    
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.classList.remove('btn-success');
+        button.classList.add('btn-outline-primary');
+    }, 2000);
+}
+</script>
+{% endblock %}

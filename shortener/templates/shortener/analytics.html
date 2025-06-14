@@ -1,0 +1,159 @@
+{% extends 'shortener/base.html' %}
+{% load shortener_extras %}
+
+{% block title %}Analytics - {{ short_url.short_code }} - URL Shortener{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow">
+            <div class="card-header">
+                <h3><i class="fas fa-chart-bar"></i> Analytics for {{ short_url.short_code }}</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5>URL Details</h5>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Short URL:</strong></td>
+                                <td>
+                                    <code>{{ full_short_url }}</code>
+                                    <button class="btn btn-sm btn-outline-primary ms-2" onclick="copyToClipboard('{{ full_short_url }}')">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Original URL:</strong></td>
+                                <td>
+                                    <a href="{{ short_url.original_url }}" target="_blank" class="text-break">
+                                        {{ short_url.original_url }}
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Created:</strong></td>
+                                <td>{{ short_url.created_at|date:"F d, Y H:i" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total Clicks:</strong></td>
+                                <td><span class="badge bg-primary fs-6">{{ short_url.click_count }}</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Status:</strong></td>
+                                <td>
+                                    {% if short_url.is_expired %}
+                                        <span class="badge bg-danger">Expired</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% if short_url.expires_at %}
+                            <tr>
+                                <td><strong>Expires:</strong></td>
+                                <td>{{ short_url.expires_at|date:"F d, Y H:i" }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if short_url.custom_alias %}
+                            <tr>
+                                <td><strong>Custom Alias:</strong></td>
+                                <td><code>{{ short_url.custom_alias }}</code></td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <h5>QR Code</h5>
+                        <div class="text-center">
+                            <img src="data:image/png;base64,{{ short_url|qr_code }}" alt="QR Code" class="img-fluid border" style="max-width: 200px;">
+                            <br>
+                            <a href="{% url 'download_qr' short_url.short_code %}" class="btn btn-outline-primary mt-2">
+                                <i class="fas fa-download"></i> Download QR Code
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-md-12">
+                        <h5>Performance Summary</h5>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body text-center">
+                                        <h4>{{ short_url.click_count }}</h4>
+                                        <p>Total Clicks</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body text-center">
+                                        <h4>{{ short_url.created_at|timesince }}</h4>
+                                        <p>Age</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body text-center">
+                                        {% if short_url.click_count > 0 %}
+                                            <h4>{{ short_url.created_at|timesince|wordcount }}</h4>
+                                            <p>Avg per Day</p>
+                                        {% else %}
+                                            <h4>0</h4>
+                                            <p>Avg per Day</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body text-center">
+                                        <h4>{{ short_url.original_url|length }}</h4>
+                                        <p>Original Length</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 text-center">
+                    <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                    <a href="{% url 'home' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Shorten Another URL
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        const button = event.target.closest('button');
+        const originalHTML = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        button.classList.remove('btn-outline-primary');
+        button.classList.add('btn-success');
+        
+        setTimeout(() => {
+            button.innerHTML = originalHTML;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-primary');
+        }, 2000);
+    });
+}
+</script>
+{% endblock %}

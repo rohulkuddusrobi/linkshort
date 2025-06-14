@@ -1,0 +1,74 @@
+{% extends 'shortener/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-body">
+                <h2 class="card-title text-center mb-4">
+                    <i class="fas fa-scissors"></i> Shorten Your URL
+                </h2>
+                
+                <form method="post" id="shortenForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="original_url" class="form-label">Long URL</label>
+                        <input type="url" class="form-control" id="original_url" name="original_url" 
+                               placeholder="https://example.com/very-long-url" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="custom_alias" class="form-label">Custom Alias (Optional)</label>
+                                <input type="text" class="form-control" id="custom_alias" name="custom_alias" 
+                                       placeholder="my-custom-link">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="expires_in_days" class="form-label">Expires in (Days)</label>
+                                <input type="number" class="form-control" id="expires_in_days" name="expires_in_days" 
+                                       placeholder="30" min="1">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-magic"></i> Shorten URL
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <h4>Features:</h4>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <i class="fas fa-chart-bar fa-2x text-primary"></i>
+                        <h6 class="mt-2">Click Tracking</h6>
+                        <p class="small">Monitor your link performance</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <i class="fas fa-qrcode fa-2x text-success"></i>
+                        <h6 class="mt-2">QR Codes</h6>
+                        <p class="small">Generate QR codes for your links</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <i class="fas fa-clock fa-2x text-warning"></i>
+                        <h6 class="mt-2">Expiry Control</h6>
+                        <p class="small">Set expiration dates for links</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
